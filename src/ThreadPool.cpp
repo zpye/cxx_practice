@@ -12,7 +12,7 @@ void thread_func1()
 
 int thread_func2(int i)
 {
-    this_thread::sleep_for(1s);
+    this_thread::sleep_for(chrono::seconds(1));
     cout << "int thread_func2(int i), i = " << i << endl;
     return (i + 2);
 }
@@ -53,6 +53,6 @@ void test_threadpool()
     {
         ThreadPool tp(1);
         tp.execute(thread_func3, ref(tp), 0);
-        this_thread::sleep_for(2s);
+        this_thread::sleep_for(chrono::seconds(2));
     }
 }
