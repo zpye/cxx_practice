@@ -1,5 +1,6 @@
 #include "SmartPointer.h"
 
+#include <memory>
 #include "interface.h"
 
 using namespace std;

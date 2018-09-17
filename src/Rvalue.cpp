@@ -4,6 +4,7 @@
 
 using namespace std;
 
+namespace rvalue {
 A func1()
 {
     A a;
@@ -44,6 +45,7 @@ A func6(A&& a)
     A b = a;
     return b;
 }
+}
 
 void test_rvalue()
 {
@@ -72,14 +74,14 @@ void test_rvalue()
 
     cout << "==========return value==========" << endl;
     {
-        func1();
-        A a1 = func1();
-        A a2 = func2(A());
-        A&& a3 = func3();
+        rvalue::func1();
+        A a1 = rvalue::func1();
+        A a2 = rvalue::func2(A());
+        A&& a3 = rvalue::func3();
         a3.setn(10);
-        A&& a4 = func4();
-        A a5 = func5();
-        a5 = func5();
-        A a6 = func6(A());
+        A&& a4 = rvalue::func4();
+        A a5 = rvalue::func5();
+        a5 = rvalue::func5();
+        A a6 = rvalue::func6(A());
     }
 }
