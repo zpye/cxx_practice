@@ -37,13 +37,16 @@ private:
 
 void test_Singleton()
 {
-    A* inst1 = A::GetInstance(1);
-    A* inst2 = A::GetInstance();
-    A* inst3 = A::GetInstance(2);
+    cout << "==========Singleton==========" << endl;
+    {
+        A* inst1 = A::GetInstance(1);
+        A* inst2 = A::GetInstance();
+        A* inst3 = A::GetInstance(2);
 
-    B* inst4 = Singleton< B >::GetInstance();
-    B* inst5 = Singleton< B >::GetInstance();
+        B* inst4 = Singleton< B >::GetInstance();
+        B* inst5 = Singleton< B >::GetInstance();
 
-    C* inst6 = C::GetInstance();
-    C* inst7 = C::GetInstance();
+        C* inst6 = C::GetInstance();
+        C* inst7 = C::GetInstance();
+    }
 }
