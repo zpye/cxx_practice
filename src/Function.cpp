@@ -8,28 +8,28 @@
 using namespace std;
 
 namespace func {
-void func1()
-{
-    cout << "func1()->void" << endl;
-}
+    void func1()
+    {
+        cout << "func1()->void" << endl;
+    }
 
-int func2(int i, string s)
-{
-    cout << "func2(int, string)->int" << endl;
-    return (i + 1);
-}
+    int func2(int i, string s)
+    {
+        cout << "func2(int, string)->int" << endl;
+        return (i + 1);
+    }
 
-void func3(int i1, int i2, int i3, int i4)
-{
-    cout << i1 << " " << i2 << " " 
-        << i3 << " " << i4 << endl;
-    cout << "func3(int, int, int, int)->void" << endl;
-}
+    void func3(int i1, int i2, int i3, int i4)
+    {
+        cout << i1 << " " << i2 << " "
+            << i3 << " " << i4 << endl;
+        cout << "func3(int, int, int, int)->void" << endl;
+    }
 
-void func4(const F& a)
-{
-    cout << "func4(F)->void" << endl;
-}
+    void func4(const F& a)
+    {
+        cout << "func4(F)->void" << endl;
+    }
 }
 
 void test_function()

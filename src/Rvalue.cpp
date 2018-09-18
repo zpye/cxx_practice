@@ -5,46 +5,46 @@
 using namespace std;
 
 namespace rvalue {
-A func1()
-{
-    A a;
-    a.setn(15);
-    return a;
-}
+    A func1()
+    {
+        A a;
+        a.setn(15);
+        return a;
+    }
 
-A func2(A a)
-{
-    A b = a;
-    A c = move(a);
-    return move(b);
-}
+    A func2(A a)
+    {
+        A b = a;
+        A c = move(a);
+        return move(b);
+    }
 
-A&& func3()
-{
-    A a;
-    return move(a);
-}
+    A&& func3()
+    {
+        A a;
+        return move(a);
+    }
 
-A&& func4()
-{
-    A&& a = A();
-    a.setn(15);
-    return move(a);
-}
+    A&& func4()
+    {
+        A&& a = A();
+        a.setn(15);
+        return move(a);
+    }
 
-A func5()
-{
-    A&& a = A();
-    A b = a;
-    A&& c = A();
-    return c;
-}
+    A func5()
+    {
+        A&& a = A();
+        A b = a;
+        A&& c = A();
+        return c;
+    }
 
-A func6(A&& a)
-{
-    A b = a;
-    return b;
-}
+    A func6(A&& a)
+    {
+        A b = a;
+        return b;
+    }
 }
 
 void test_rvalue()
