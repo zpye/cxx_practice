@@ -9,5 +9,6 @@ void test_template();
 void test_smartpointer();
 void test_function();
 void test_threadpool();
+void test_lazy_evaluation();
 
 #endif // CXX_PRACTICE_INTERFACE_H
