@@ -11,5 +11,7 @@ int main(int argc, char* argv[])
     test_function();
     test_threadpool();
     test_lazy_evaluation();
+    test_coroutine();
+    
     return 0;
 }

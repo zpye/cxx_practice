@@ -1,3 +1,7 @@
+/**
+ * refer to https://github.com/dmlc/mshadow
+*/
+
 #include "LazyEvaluation.h"
 
 #include <iostream>

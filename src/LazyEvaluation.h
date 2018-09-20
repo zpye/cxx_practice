@@ -1,3 +1,7 @@
+/**
+ * refer to https://github.com/dmlc/mshadow
+*/
+
 #ifndef CXX_PRACTICE_LAZY_EVALUATION_H
 #define CXX_PRACTICE_LAZY_EVALUATION_H
 
