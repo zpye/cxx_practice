@@ -6,39 +6,26 @@
 #include "Coroutine.h"
 
 #include <iostream>
+#include <memory>
 #include "interface.h"
 
 using namespace std;
 
-class ProtoB;
+using PTS = struct ProtothreadStatics {
+    static bool flagA;
+    static bool flagB;
+};
+
+bool PTS::flagA = false;
+bool PTS::flagB = false;
+//using PTS = struct ProtothreadStatics;
 
 class ProtoA : public Protothreads
 {
 public:
     bool Run() override;
 
-    void setB(ProtoB* _ptB)
-    {
-        ptB = _ptB;
-    }
-
 private:
-    ProtoB* ptB;
-    size_t i;
-};
-
-class ProtoB : public Protothreads
-{
-public:
-    bool Run() override;
-
-    void setA(ProtoA* _ptA)
-    {
-        ptA = _ptA;
-    }
-
-private:
-    ProtoA* ptA;
     size_t i;
 };
 
@@ -48,12 +35,24 @@ bool ProtoA::Run()
 
     for(i = 0; i < 5; ++i)
     {
+        PT_WAIT_UNTIL(PTS::flagB);
         cout << "ProtoA i: " << i << endl;
-        PT_WAIT_THREAD(*ptB);
+        
+        PTS::flagB = false;
+        PTS::flagA = true;
     }
 
     PT_END();
 }
+
+class ProtoB : public Protothreads
+{
+public:
+    bool Run() override;
+
+private:
+    size_t i;
+};
 
 bool ProtoB::Run()
 {
@@ -61,23 +60,51 @@ bool ProtoB::Run()
 
     for(i = 0; i < 10; ++i)
     {
+        PT_WAIT_UNTIL(PTS::flagA);
         cout << "ProtoB i: " << i << endl;
-        PT_WAIT_THREAD(*ptA);
+        
+        PTS::flagA = false;
+        PTS::flagB = true;
     }
 
     PT_END();
+}
+
+class Driver
+{
+public:
+    Driver()
+    {
+        ptA = make_shared< ProtoA >();
+        ptB = make_shared< ProtoB >();
+    }
+
+    bool Run();
+    
+private:
+    shared_ptr< ProtoA > ptA;
+    shared_ptr< ProtoB > ptB;
+};
+
+bool Driver::Run()
+{
+    PTS::flagA = false;
+    PTS::flagB = true;
+
+    cout << "Driver start" << endl;
+    do
+    {
+        ptA->Run();
+        ptB->Run();
+    } while(ptA->isRunning() || ptB->isRunning());
+    cout << "Driver end" << endl;
 }
 
 void test_coroutine()
 {
     cout << "==========coroutine==========" << endl;
     {
-        ProtoA ptA;
-        ProtoB ptB;
-
-        ptA.setB(&ptB);
-        ptB.setA(&ptA);
-
-        ptB.Run();
+        Driver driver;
+        driver.Run();
     }
 }
