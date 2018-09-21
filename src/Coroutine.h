@@ -35,7 +35,7 @@ protected:
     static const uint32_t lineInvalid = static_cast< uint32_t >(-1);
 };
 
-#define PT_BEGIN() bool ptYielded = true; (void) ptYielded; switch (ptLine) { case 0:
+#define PT_BEGIN() bool ptYielded = true; switch (ptLine) { case 0:
 
 #define PT_END() default: ; } Stop(); return false;
 

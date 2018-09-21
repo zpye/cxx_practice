@@ -70,6 +70,30 @@ bool ProtoB::Run()
     PT_END();
 }
 
+class ProtoC : public Protothreads
+{
+public:
+    bool Run() override;
+
+private:
+    size_t i;
+};
+
+bool ProtoC::Run()
+{
+    PT_BEGIN();
+
+    for(i = 0; i < 6; ++i)
+    {
+        cout << "ProtoC i: " << i << endl;
+        PT_YIELD();
+    }
+
+    cout << "ProtoC end" << endl;
+
+    PT_END();
+}
+
 class Driver
 {
 public:
@@ -106,5 +130,11 @@ void test_coroutine()
     {
         Driver driver;
         driver.Run();
+    }
+
+    cout << "==========yield==========" << endl;
+    {
+        ProtoC ptC;
+        while(ptC.Run());
     }
 }
