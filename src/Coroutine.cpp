@@ -122,6 +122,8 @@ bool Driver::Run()
         ptB->Run();
     } while(ptA->isRunning() || ptB->isRunning());
     cout << "Driver end" << endl;
+
+    return true;
 }
 
 void test_coroutine()

@@ -12,6 +12,7 @@ int main(int argc, char* argv[])
     test_threadpool();
     test_lazy_evaluation();
     test_coroutine();
+    test_chain();
     
     return 0;
 }

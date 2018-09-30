@@ -11,5 +11,6 @@ void test_function();
 void test_threadpool();
 void test_lazy_evaluation();
 void test_coroutine();
+void test_chain();
 
 #endif // CXX_PRACTICE_INTERFACE_H
