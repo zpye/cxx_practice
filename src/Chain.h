@@ -3,6 +3,9 @@
 
 #include "ThreadPool.h"
 
+#include <iostream>
+#include <type_traits>
+
 template< typename T >
 class Chain;
 
@@ -12,42 +15,38 @@ class Chain< R(Args...) >
 public:
     using TFunc = std::function< R(Args...) >;
 
-    Chain(const TFunc& f)
+    Chain(const TFunc& f, bool _noThen = true)
+        : noThen(_noThen) 
     {
-        inFunc = std::make_shared< TFunc >(f);
+        mFunc = std::make_shared< TFunc >(f);
     }
 
-    Chain(TFunc&& f) 
+    Chain(TFunc&& f, bool _noThen = true)
+        : noThen(_noThen)
     {
-        inFunc = std::make_shared< TFunc >(std::move(f));
+        mFunc = std::make_shared< TFunc >(std::move(f));
     }
 
-    template< typename F >
-    Chain& SetFunc(F&& f)
+    Chain& SetThreadPool(std::shared_ptr< ThreadPool > pool)
     {
-        mFunc = std::forward< F >(f);
-        return (*this);
+        mPool = pool;
     }
 
     std::future< R > Run(Args&&... args)
     {
-        if(!mFunc)
+        if(!mPool)
         {
-            mPool.execute(
-                [this](Args&&... args) 
-                {
-                    auto task = std::packaged_task< R(Args...) >(*inFunc);
-                    task(std::forward< Args >(args)...);
-                    result = task.get_future(); 
-                }, 
-                std::forward< Args >(args)...);
+            mPool = std::make_shared< ThreadPool >(1);
+        }
+
+        if(noThen) // without then
+        {
+            return mPool->execute(*mFunc, std::forward< Args >(args)...);
         }
         else
         {
-            mPool.execute(mFunc, std::forward< Args >(args)...);
+            return (*mFunc)(std::forward< Args >(args)...);
         }
-        
-        return std::move(result);
     }
 
     template< typename F >
@@ -55,34 +54,46 @@ public:
         -> Chain< typename std::result_of< F(R) >::type(Args...) >
     {
         using rtype = typename std::result_of< F(R) >::type;
+        
+        std::function< rtype(std::future< R >) > inFunc = 
+            [f](std::future< R > p) {
+                return f(p.get());
+            };
 
-        F _inFunc(std::forward< F >(f)); // function< rtype(R) >
-
-        *inFunc = [_inFunc, this](Args&&... args) {
-            R value = (*inFunc)(std::forward< Args >(args)...);
-            result = mPool.execute(_inFunc, value);
-            return value;
-        };
-
-        if(!mFunc)
+        std::shared_ptr< ThreadPool > mPool_ = mPool;
+        
+        if(noThen)
         {
-            mFunc = *inFunc;
+            std::shared_ptr< TFunc > mFunc__ = mFunc;
+            std::shared_ptr< std::function< std::future< R >(Args...) > > mFunc_ = 
+            std::make_shared< std::function< std::future< R >(Args...) > >(
+                [mFunc__, mPool_](Args&&... args) {
+                    return mPool_->execute(mFunc__, std::forward< Args >(args)...);
+                }
+            );
+
+            return Chain< std::future< rtype >(Args...) >(
+                [mFunc_, inFunc, mPool_](Args&&... args) {
+                    std::future< R > prev = (*mFunc_)(std::forward< Args >(args)...);
+                    return mPool_->execute(inFunc, std::move(prev));
+                }, false).SetThreadPool(mPool_);
         }
+        else
+        {
+            std::shared_ptr< TFunc > mFunc_ = mFunc;
 
-        Chain< rtype(Args...) > chain(_inFunc);
-        chain.SetFunc(mFunc);
-
-        return std::move(chain);
+            return Chain< std::future< rtype >(Args...) >(
+                [mFunc_, inFunc, mPool_](Args&&... args) {
+                    std::future< R > prev = (*mFunc_)(std::forward< Args >(args)...);
+                    return mPool_->execute(inFunc, std::move(prev));
+                }, false).SetThreadPool(mPool_);
+        }
     }
 
 private:
-    std::shared_ptr< TFunc > inFunc;
-    TFunc mFunc;
-    std::future< R > result;
-    static ThreadPool mPool;
+    std::shared_ptr< TFunc > mFunc;
+    std::shared_ptr< ThreadPool > mPool;
+    bool noThen;
 };
-
-template< typename R, typename... Args >
-ThreadPool Chain< R(Args...) >::mPool(1);
 
 #endif // CXX_PRACTICE_CHAIN_H
