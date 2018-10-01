@@ -14,39 +14,45 @@ class Chain< R(Args...) >
 {
 public:
     using TFunc = std::function< R(Args...) >;
+    using MFunc = std::function< std::future< R >(Args...) >;
 
-    Chain(const TFunc& f, bool _noThen = true)
-        : noThen(_noThen) 
+    Chain(const TFunc& f)
     {
-        mFunc = std::make_shared< TFunc >(f);
+        mPool = std::make_shared< ThreadPool >(1);
+        mFunc = std::make_shared< MFunc >(
+            [=](Args&&... args) {
+                return mPool->execute(f, 
+                                      std::forward< Args >(args)...);
+            }
+        );
     }
 
-    Chain(TFunc&& f, bool _noThen = true)
-        : noThen(_noThen)
+    Chain(TFunc&& f)
     {
-        mFunc = std::make_shared< TFunc >(std::move(f));
+        mPool = std::make_shared< ThreadPool >(1);
+        mFunc = std::make_shared< MFunc >(
+            [=](Args&&... args) {
+                return mPool->execute(std::move(f), 
+                                      std::forward< Args >(args)...);
+            }
+        );
     }
 
-    Chain& SetThreadPool(std::shared_ptr< ThreadPool > pool)
+    Chain(const MFunc& f, std::shared_ptr< ThreadPool > pool)
+        : mPool(pool)
     {
-        mPool = pool;
+        mFunc = std::make_shared< MFunc >(f);
+    }
+
+    Chain(MFunc&& f, std::shared_ptr< ThreadPool > pool)
+        : mPool(pool)
+    {
+        mFunc = std::make_shared< MFunc >(std::move(f));
     }
 
     std::future< R > Run(Args&&... args)
     {
-        if(!mPool)
-        {
-            mPool = std::make_shared< ThreadPool >(1);
-        }
-
-        if(noThen) // without then
-        {
-            return mPool->execute(*mFunc, std::forward< Args >(args)...);
-        }
-        else
-        {
-            return (*mFunc)(std::forward< Args >(args)...);
-        }
+        return (*mFunc)(std::forward< Args >(args)...);
     }
 
     template< typename F >
@@ -60,40 +66,18 @@ public:
                 return f(p.get());
             };
 
-        std::shared_ptr< ThreadPool > mPool_ = mPool;
-        
-        if(noThen)
-        {
-            std::shared_ptr< TFunc > mFunc__ = mFunc;
-            std::shared_ptr< std::function< std::future< R >(Args...) > > mFunc_ = 
-            std::make_shared< std::function< std::future< R >(Args...) > >(
-                [mFunc__, mPool_](Args&&... args) {
-                    return mPool_->execute(mFunc__, std::forward< Args >(args)...);
-                }
-            );
+        std::function< std::future< rtype >(Args...) > mFunc_ = 
+            [=](Args&&... args) {
+                std::future< R > prev = (*mFunc)(std::forward< Args >(args)...);
+                return mPool->execute(inFunc, std::move(prev));
+            };
 
-            return Chain< std::future< rtype >(Args...) >(
-                [mFunc_, inFunc, mPool_](Args&&... args) {
-                    std::future< R > prev = (*mFunc_)(std::forward< Args >(args)...);
-                    return mPool_->execute(inFunc, std::move(prev));
-                }, false).SetThreadPool(mPool_);
-        }
-        else
-        {
-            std::shared_ptr< TFunc > mFunc_ = mFunc;
-
-            return Chain< std::future< rtype >(Args...) >(
-                [mFunc_, inFunc, mPool_](Args&&... args) {
-                    std::future< R > prev = (*mFunc_)(std::forward< Args >(args)...);
-                    return mPool_->execute(inFunc, std::move(prev));
-                }, false).SetThreadPool(mPool_);
-        }
+        return Chain< rtype(Args...) >(mFunc_, mPool);
     }
 
 private:
-    std::shared_ptr< TFunc > mFunc;
+    std::shared_ptr< MFunc > mFunc;
     std::shared_ptr< ThreadPool > mPool;
-    bool noThen;
 };
 
 #endif // CXX_PRACTICE_CHAIN_H
