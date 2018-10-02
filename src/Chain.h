@@ -60,19 +60,37 @@ public:
         -> Chain< typename std::result_of< F(R) >::type(Args...) >
     {
         using rtype = typename std::result_of< F(R) >::type;
-        
-        std::function< rtype(std::future< R >) > inFunc = 
-            [f](std::future< R > p) {
-                return f(p.get());
-            };
 
-        std::function< std::future< rtype >(Args...) > mFunc_ = 
+        return Chain< rtype(Args...) >(
             [=](Args&&... args) {
                 std::future< R > prev = (*mFunc)(std::forward< Args >(args)...);
-                return mPool->execute(inFunc, std::move(prev));
-            };
+                return mPool->execute(Convert< R >(f), prev.share());
+            }, mPool);
+    }
 
-        return Chain< rtype(Args...) >(mFunc_, mPool);
+    template< typename F >
+    auto ConvertImpl(F&& f, std::false_type)
+        -> std::function< typename std::result_of< F(R) >::type(std::shared_future< R >) >
+    {
+        return [f](std::shared_future< R > p) {
+            return f(p.get());
+        };
+    }
+
+    template< typename F >
+    auto ConvertImpl(F&& f, std::true_type)
+        -> std::function< typename std::result_of< F(void) >::type(std::shared_future< void >) >
+    {
+        return [f](std::shared_future< void > p) {
+            p.get();
+            return f();
+        };
+    }
+
+    template< typename R, typename F >
+    auto Convert(F&& f)
+    {
+        return ConvertImpl(std::forward< F >(f), std::is_void< R >());
     }
 
 private:
