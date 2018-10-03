@@ -75,8 +75,9 @@ public:
     {
         using rtype = typename std::result_of< F(R) >::type;
 
-        auto func = [f](std::shared_future< R > p) {
-            return f(p.get());
+        std::function< rtype(R) > f_(std::forward< F >(f));
+        auto func = [f_](std::shared_future< R > p) {
+            return f_(p.get());
         };
 
         std::shared_ptr< MFunc > mFunc_(mFunc);
@@ -159,9 +160,10 @@ public:
     {
         using rtype = typename std::result_of< F(void) >::type;
 
-        auto func = [f](std::shared_future< void > p) {
+        std::function< rtype(void) > f_(std::forward< F >(f));
+        auto func = [f_](std::shared_future< void > p) {
             p.get();
-            return f();
+            return f_();
         };
 
         std::shared_ptr< MFunc > mFunc_(mFunc);
