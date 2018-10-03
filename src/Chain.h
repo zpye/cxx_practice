@@ -68,7 +68,7 @@ public:
             }, mPool);
     }
 
-    template< typename M >
+    template< typename M, typename VOID = void >
     class Converter
     {
     public:
@@ -82,8 +82,8 @@ public:
         }
     };
 
-    template<>
-    class Converter< void >
+    template< typename VOID >
+    class Converter< void, VOID >
     {
     public:
         template< typename F >
