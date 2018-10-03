@@ -64,7 +64,7 @@ public:
         return Chain< rtype(Args...) >(
             [=](Args&&... args) {
                 std::future< R > prev = (*mFunc)(std::forward< Args >(args)...);
-                return mPool->execute(Convert< R >(f), prev.share());
+                return mPool->execute(Convert(f), prev.share());
             }, mPool);
     }
 
@@ -87,8 +87,9 @@ public:
         };
     }
 
-    template< typename R, typename F >
+    template< typename F >
     auto Convert(F&& f)
+        -> std::function< typename std::result_of< F(R) >::type(std::shared_future< R >) >
     {
         return ConvertImpl(std::forward< F >(f), std::is_void< R >());
     }
