@@ -68,30 +68,40 @@ public:
             }, mPool);
     }
 
-    template< typename F >
-    auto ConvertImpl(F&& f, std::false_type)
-        -> std::function< typename std::result_of< F(R) >::type(std::shared_future< R >) >
+    template< typename M >
+    class Converter
     {
-        return [f](std::shared_future< R > p) {
-            return f(p.get());
-        };
-    }
+    public:
+        template< typename F >
+        static auto cast(F&& f)
+            -> std::function< typename std::result_of< F(M) >::type(std::shared_future< M >) >
+        {
+            return [f](std::shared_future< M > p) {
+                return f(p.get());
+            };
+        }
+    };
 
-    template< typename F >
-    auto ConvertImpl(F&& f, std::true_type)
-        -> std::function< typename std::result_of< F(void) >::type(std::shared_future< void >) >
+    template<>
+    class Converter< void >
     {
-        return [f](std::shared_future< void > p) {
-            p.get();
-            return f();
-        };
-    }
+    public:
+        template< typename F >
+        static auto cast(F&& f)
+            -> std::function< typename std::result_of< F(void) >::type(std::shared_future< void >) >
+        {
+            return [f](std::shared_future< void > p) {
+                p.get();
+                return f();
+            };
+        }
+    };
 
     template< typename F >
     auto Convert(F&& f)
         -> std::function< typename std::result_of< F(R) >::type(std::shared_future< R >) >
     {
-        return ConvertImpl(std::forward< F >(f), std::is_void< R >());
+        return Converter< R >::cast(std::forward< F >(f));
     }
 
 private:
