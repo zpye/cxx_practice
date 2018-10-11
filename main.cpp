@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
     test_lazy_evaluation();
     test_coroutine();
     test_chain();
+    test_size();
     
     return 0;
 }

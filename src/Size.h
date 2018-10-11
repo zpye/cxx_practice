@@ -1,0 +1,6 @@
+#ifndef CXX_PRACTICE_SIZE_H
+#define CXX_PRACTICE_SIZE_H
+
+
+
+#endif // CXX_PRACTICE_SIZE_H

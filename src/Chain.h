@@ -59,9 +59,11 @@ public:
     {
         mFunc = std::move(chain.mFunc);
         mPool = std::move(chain.mPool);
+        return *this;
     }
 
     Chain(const Chain&) = delete;
+
     Chain& operator=(const Chain&) = delete;
 
     std::future< R > Run(Args&&... args)
