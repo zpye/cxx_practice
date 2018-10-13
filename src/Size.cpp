@@ -18,5 +18,20 @@ void test_size()
         cout << "sizeof float: " << sizeof(float) << endl;
         cout << "sizeof double: " << sizeof(double) << endl;
         cout << "sizeof long double: " << sizeof(long double) << endl;
+        cout << "sizeof void*: " << sizeof(void*) << endl;
+    }
+
+    cout << "==========function and class==========" << endl;
+    {
+        cout << "sizeof function: " << sizeof(&EmptyFunction) << endl;
+        cout << "sizeof empty class: " << sizeof(Empty) << endl;
+        cout << "sizeof class with char: " << sizeof(Variable< char >) << endl;
+        cout << "sizeof class with int: " << sizeof(Variable< int >) << endl;
+        cout << "sizeof class with double: " << sizeof(Variable< double >) << endl;
+        cout << "sizeof class with void*: " << sizeof(Variable< void* >) << endl;
+        cout << "sizeof class with float*: " << sizeof(Variable< float* >) << endl;
+        cout << "sizeof class with function: " << sizeof(Function) << endl;
+        cout << "sizeof class with static function: " << sizeof(StaticFunction) << endl;
+        cout << "sizeof class with virtual function: " << sizeof(VirtualFunction) << endl;
     }
 }
