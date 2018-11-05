@@ -22,6 +22,21 @@ protected:
     size_t cnt;
 };
 
+class SD : public S
+{
+public:
+    SD()
+    {
+        cnt = count++;
+        std::cout << "SD() " << cnt << std::endl;
+    }
+
+    ~SD()
+    {
+        std::cout << "~SD() " << cnt << std::endl;
+    }
+};
+
 size_t S::count = 0;
 
 #endif // CXX_PRACTICE_SMART_POINTER_H

@@ -41,4 +41,12 @@ void test_smartpointer()
 
         cout << "unique pointer end" << endl;
     }
+
+    cout << "==========derived class==========" << endl;
+    {
+        shared_ptr< S > s1(new S());
+        shared_ptr< SD > s2(new SD());
+
+        cout << "derived class end" << endl;
+    }
 }

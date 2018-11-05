@@ -13,5 +13,6 @@ void test_lazy_evaluation();
 void test_coroutine();
 void test_chain();
 void test_size();
+void test_sharedptr();
 
 #endif // CXX_PRACTICE_INTERFACE_H

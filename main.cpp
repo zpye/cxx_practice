@@ -14,6 +14,7 @@ int main(int argc, char* argv[])
     test_coroutine();
     test_chain();
     test_size();
+    test_sharedptr();
     
     return 0;
 }
