@@ -51,12 +51,29 @@ private:
 };
 
 template< typename T >
+class RefBlock< T[] > : public RefBlockBase
+{
+public:
+    RefBlock(T* ptr) : ref_pointer(ptr) {}
+
+    void DeleteRef() override
+    {
+        delete[] ref_pointer;
+    }
+
+private:
+    T* ref_pointer;
+};
+
+template< typename T >
 class SharedPtr
 {
 public:
+    using Type = typename std::remove_extent< T >::type;
+
     SharedPtr() : pointer(nullptr), ref_block(nullptr) {}
 
-    SharedPtr(T* ptr)
+    SharedPtr(Type* ptr)
         : pointer(ptr)
     {
         ref_block = new RefBlock< T >(ptr);
@@ -73,9 +90,20 @@ public:
         return (*this);
     }
 
+    SharedPtr(SharedPtr&& sp)
+    {
+        MoveConstruct(std::move(sp));
+    }
+
+    SharedPtr& operator=(SharedPtr&& sp)
+    {
+        MoveConstruct(std::move(sp));
+        return (*this);
+    }
+
     ~SharedPtr()
     {
-        if(ref_block->DecCnt())
+        if(ref_block != nullptr && ref_block->DecCnt())
         {
             delete ref_block;
         }
@@ -109,7 +137,7 @@ private:
     }
 
 private:
-    T* pointer;
+    Type* pointer;
     RefBlockBase* ref_block;
 };
 

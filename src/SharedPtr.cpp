@@ -47,5 +47,10 @@ void test_sharedptr()
     {
         SharedPtr< TestB > sp1(new TestB());
         SharedPtr< TestB > sp2(sp1);
+        SharedPtr< TestB > sp3(move(sp1));
+
+        SharedPtr< int > sp4(new int(0));
+        SharedPtr< int[] > sp5(new int[10]{1});
+        SharedPtr< TestB[] > sp6(new TestB[5]);
     }
 }
