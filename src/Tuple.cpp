@@ -4,6 +4,7 @@
 #include <map>
 #include <tuple>
 #include <string>
+#include <functional>
 
 #include "interface.h"
 
@@ -31,6 +32,7 @@ void test_tuple()
         tuple< char&, int&, float& > tp1 = tie(c, i, f);
         c = 'd';
         get< 1 >(tp1) = 2;
+        cout << get<0>(tp1) << " " << get< 1 >(tp1) << endl;
         cout << &f << " " << &get< 2 >(tp1) << endl;
 
         double d;
