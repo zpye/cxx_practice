@@ -1,6 +1,7 @@
 #ifndef CXX_PRACTICE_SINGLETON_H
 #define CXX_PRACTICE_SINGLETON_H
 
+#include <memory>
 #include <mutex>
 #include <utility>
 
@@ -9,12 +10,13 @@ template <typename T>
 class Singleton {
  public:
   template <typename... Args>
-  static T* GetInstance(Args&&... args) {
-    std::call_once(Singleton<T>::oc, [&] {
-      static T inst(std::forward<Args>(args)...);
-      p_inst = &inst;
-    });
-    return p_inst;
+  static T& GetInstance(Args&&... args) {
+    std::call_once(Singleton<T>::oc,
+                   [&](Args&&... args) {
+                     p_inst.reset(new T(std::forward<Args>(args)...));
+                   },
+                   std::forward<Args>(args)...);
+    return *p_inst;
   }
 
   Singleton(const Singleton&) = delete;
@@ -25,12 +27,12 @@ class Singleton {
   ~Singleton() = default;
 
  private:
-  static T* p_inst;
+  static std::unique_ptr<T> p_inst;
   static std::once_flag oc;
 };
 
 template <typename T>
-T* Singleton<T>::p_inst = nullptr;
+std::unique_ptr<T> Singleton<T>::p_inst(nullptr);
 
 template <typename T>
 std::once_flag Singleton<T>::oc;

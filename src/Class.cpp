@@ -45,10 +45,6 @@ public:
   }
 };
 
-class C : public Final {
-
-};
-
 void test_class() {
   // construct and deconstruct
   cout << "==========construct and deconstruct==========" << endl;
