@@ -12,6 +12,8 @@ class StackOnly {
 
   void* operator new(size_t) = delete;
   void operator delete(void*) = delete;
+  void* operator new[](size_t) = delete;
+  void operator delete[](void*) = delete;
 };
 
 class HeapOnly {
@@ -29,19 +31,45 @@ class HeapOnly {
 template <typename T>
 class NonInherit {
   friend T;
+
  private:
-   NonInherit() = default;
-   ~NonInherit() = default;
+  NonInherit() = default;
+  ~NonInherit() = default;
 };
 
 class Final : virtual public NonInherit<Final> {
-public:
-  Final() {
-    cout << "Final()" << endl;
+ public:
+  Final() { cout << "Final()" << endl; }
+
+  ~Final() { cout << "~Final()" << endl; }
+};
+
+// overide new and delete
+class NewAndDelete {
+ public:
+  NewAndDelete() { cout << "NewAndDelete()" << endl; }
+  ~NewAndDelete() { cout << "~NewAndDelete()" << endl; }
+
+  char c = '0';
+
+  void* operator new(size_t n) {
+    cout << "operator new(size_t) " << n << endl;
+    return ::operator new(n);
   }
 
-  ~Final() {
-    cout << "~Final()" << endl;
+  void operator delete(void* ptr) {
+    cout << "operator delete(void*)" << endl;
+    return ::operator delete(ptr);
+  }
+
+  void* operator new[](size_t n) {
+    cout << "operator new[](size_t) " << n << endl;
+    return ::operator new[](n);
+  }
+
+  void operator delete[](void* ptr) {
+    cout << "operator delete[](void*)" << endl;
+    return ::operator delete[](ptr);
   }
 };
 
@@ -151,5 +179,19 @@ void test_class() {
     Final f;
     Final* pf = new Final;
     delete pf;
+  }
+
+  // override new and delete
+  {
+    NewAndDelete* p = new NewAndDelete;
+    delete p;
+
+    p = new NewAndDelete[2];
+    NewAndDelete* q = ::new (p) NewAndDelete;
+
+    size_t* s = reinterpret_cast<size_t*>(p);
+    cout << *(s - 1) << endl;
+
+    delete[] p;
   }
 }
